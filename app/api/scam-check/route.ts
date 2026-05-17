@@ -1,20 +1,32 @@
-import OpenAI from "openai";
+import { NextResponse } from 'next/server';
+import { GoogleGenAI } from '@google/genai';
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || "mock-key",
 });
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [
+    // Mock response if there's no real API key
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "AIzaSyC-LbfoCRTZ1hdUO5Iu4mYSKo51q1uiItg") {
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
+      return NextResponse.json({
+        result: "(Simulated) Risk Level: Medium\n\nI detect some urgency here, but this is a simulated response since no real Gemini API key is configured.",
+      });
+    }
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
         {
-          role: "system",
-          content: `
-You are a financial scam detection assistant.
+          role: 'user',
+          parts: [{ text: body.message }]
+        }
+      ],
+      config: {
+        systemInstruction: `You are a financial scam detection assistant.
 
 Analyze messages and determine whether they may be scams.
 
@@ -28,21 +40,16 @@ Focus on:
 Keep explanations beginner-friendly and concise.
 
 At the end include:
-Risk Level: Low / Medium / High
-`,
-        },
-        {
-          role: "user",
-          content: body.message,
-        },
-      ],
+Risk Level: Low / Medium / High`,
+      }
     });
 
-    return Response.json({
-      result: completion.choices[0].message.content,
+    return NextResponse.json({
+      result: response.text,
     });
   } catch (error) {
-    return Response.json({
+    console.error("Scam Check API Error:", error);
+    return NextResponse.json({
       error: "Something went wrong.",
     });
   }
