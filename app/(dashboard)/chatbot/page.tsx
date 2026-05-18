@@ -26,7 +26,7 @@ export default function ChatbotPage() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi there! I'm your FinLearn AI Tutor. I can help you understand personal finance, budgeting, investing, and more. What would you like to learn about today?",
+      content: "Hi there! I'm your AtlasLearn AI Tutor. I can help you understand personal finance, budgeting, investing, and more. What would you like to learn about today?",
       timestamp: new Date()
     }
   ]);

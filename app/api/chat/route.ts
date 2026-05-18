@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
 
     // Mock response if there's no real API key
-    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "AIzaSyC-LbfoCRTZ1hdUO5Iu4mYSKo51q1uiItg") {
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "your_api_key_here") {
       await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
 
       const lastMessage = messages[messages.length - 1].content.toLowerCase();

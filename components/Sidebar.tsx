@@ -10,7 +10,7 @@ export default function Sidebar() {
   return (
     <aside className="hidden md:block w-64 bg-white border-r min-h-screen p-5">
       <h1 className="text-2xl font-bold text-green-600 mb-10">
-        FinLearn AI
+        AtlasLearn AI
       </h1>
 
       <nav className="space-y-4">

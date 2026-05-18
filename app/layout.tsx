@@ -1,6 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
+import GlobalChatbot from "@/components/GlobalChatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,11 +16,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FinLearn AI - Your Finance Tutor",
+  title: "AtlasLearn AI - Your Finance Tutor",
   description: "AI-powered financial literacy platform for students",
+  manifest: "/manifest.json",
 };
 
-import { ThemeProvider } from "@/components/theme-provider";
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
+};
 
 export default function RootLayout({
   children,
@@ -26,14 +32,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col font-sans antialiased`}>
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
+      <body
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col font-sans antialiased`}
+      >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AuthProvider>
+            {children}
+            <GlobalChatbot />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
