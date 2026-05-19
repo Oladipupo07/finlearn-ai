@@ -54,15 +54,7 @@ export default function Home() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] -z-10" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] -z-10" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="inline-flex items-center space-x-2 bg-muted/50 border border-border px-4 py-2 rounded-full mb-8 backdrop-blur-md"
-        >
-          <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm font-medium">AtlasLearn AI V2.0 is live!</span>
-        </motion.div>
+
 
         <motion.h1
           initial={{ opacity: 0, y: 30 }}

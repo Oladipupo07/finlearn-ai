@@ -67,7 +67,8 @@ export default function SignupPage() {
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
       if (code !== "auth/popup-closed-by-user") {
-        setError("Google sign-in failed. Please try again.");
+        console.error("Google sign in error:", err);
+        setError(`Google sign-in failed: ${code}. Please try again.`);
       }
     } finally {
       setGoogleLoading(false);
