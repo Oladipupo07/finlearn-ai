@@ -226,24 +226,39 @@ export default function DashboardPage() {
 
         {/* Right column */}
         <div className="space-y-6">
-          <motion.div variants={itemVariants} className="bg-card/60 backdrop-blur-sm border border-border p-6 rounded-2xl shadow-sm" style={{ height: 260 }}>
+          <motion.div variants={itemVariants} className="bg-card/60 backdrop-blur-sm border border-border p-6 rounded-2xl shadow-sm min-h-[260px] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">Spending Categories</h2>
             {categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={categoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={4} dataKey="value" stroke="none">
-                    {categoryData.map((_, index) => (
-                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))" }}
-                    formatter={(v) => [`₦${Number(v).toLocaleString()}`, ""]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <div className="h-48 w-full mt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={categoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={4} dataKey="value" stroke="none">
+                        {categoryData.map((_, index) => (
+                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))" }}
+                        formatter={(v) => [`₦${Number(v).toLocaleString()}`, ""]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-4 flex flex-col gap-2 max-h-32 overflow-y-auto pr-1">
+                  {categoryData.map((cat, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                        <span className="text-muted-foreground truncate max-w-[120px]">{cat.name}</span>
+                      </div>
+                      <span className="font-semibold text-foreground">₦{cat.value.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <div className="h-full flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center min-h-[200px]">
                 <div className="text-center text-muted-foreground">
                   <Target className="w-8 h-8 mx-auto mb-2 opacity-40" />
                   <p className="text-sm">No expenses yet</p>
