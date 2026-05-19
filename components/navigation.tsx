@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
@@ -104,11 +103,6 @@ export function Sidebar() {
           <span>Settings</span>
         </Link>
 
-        <div className="flex items-center justify-between px-3 py-2.5">
-          <span className="text-sm font-medium text-muted-foreground">Theme</span>
-          <ThemeToggle />
-        </div>
-
         {user ? (
           <button
             onClick={handleLogout}
@@ -157,7 +151,6 @@ export function MobileNav() {
           <span className="text-lg font-bold tracking-tight">AtlasLearn <span className="text-primary">AI</span></span>
         </div>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 -mr-2 text-foreground">
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
