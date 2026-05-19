@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthProvider } from "@/contexts/AuthContext";
 import GlobalChatbot from "@/components/GlobalChatbot";
 
@@ -49,6 +50,9 @@ export default function RootLayout({
         >
           <AuthProvider>
             {children}
+            <div className="fixed bottom-6 left-6 z-40 bg-card/60 backdrop-blur-lg border border-border rounded-full shadow-2xl p-1 flex items-center justify-center">
+              <ThemeToggle />
+            </div>
             <GlobalChatbot />
           </AuthProvider>
         </ThemeProvider>
