@@ -84,7 +84,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl shadow-black/20">
+        <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/20">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
             <p className="text-muted-foreground mt-1 text-sm">Sign in to continue your financial journey</p>

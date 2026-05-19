@@ -29,6 +29,7 @@ const itemVariants = {
 export default function DashboardPage() {
   const { user } = useAuth();
   const [income, setIncome] = useState(0);
+  const [incomePeriod, setIncomePeriod] = useState("Monthly");
   const [savingsGoal, setSavingsGoal] = useState(100000);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -50,6 +51,7 @@ export default function DashboardPage() {
         if (snap.exists()) {
           const data = snap.data();
           setIncome(data.income ?? 0);
+          setIncomePeriod(data.incomePeriod ?? "Monthly");
           setSavingsGoal(data.savingsGoal ?? 100000);
         }
       });
@@ -61,9 +63,11 @@ export default function DashboardPage() {
       return () => { unsubBudget(); unsubExpenses(); };
     } else {
       const si = localStorage.getItem("atlaslearn_income");
+      const sp = localStorage.getItem("atlaslearn_income_period");
       const sg = localStorage.getItem("atlaslearn_goal");
       const se = localStorage.getItem("atlaslearn_expenses");
       if (si) setIncome(Number(si));
+      if (sp) setIncomePeriod(sp);
       if (sg) setSavingsGoal(Number(sg));
       if (se) setExpenses(JSON.parse(se));
     }
@@ -125,7 +129,7 @@ export default function DashboardPage() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <Wallet className="w-5 h-5" />
             </div>
-            <h2 className="text-muted-foreground font-medium text-sm">Monthly Income</h2>
+            <h2 className="text-muted-foreground font-medium text-sm">{incomePeriod} Income</h2>
           </div>
           <p className="text-3xl font-bold">₦{income.toLocaleString()}</p>
           {income === 0 && (

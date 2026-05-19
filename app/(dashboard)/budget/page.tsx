@@ -39,6 +39,7 @@ export default function BudgetPage() {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [income, setIncome] = useState(500000);
+  const [incomePeriod, setIncomePeriod] = useState("Monthly");
   const [savingsGoal, setSavingsGoal] = useState(100000);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -67,6 +68,7 @@ export default function BudgetPage() {
         if (snap.exists()) {
           const data = snap.data();
           setIncome(data.income ?? 500000);
+          setIncomePeriod(data.incomePeriod ?? "Monthly");
           setSavingsGoal(data.savingsGoal ?? 100000);
         }
         setLoadingData(false);
@@ -85,9 +87,11 @@ export default function BudgetPage() {
     } else {
       // Fallback: localStorage
       const si = localStorage.getItem("atlaslearn_income");
+      const sp = localStorage.getItem("atlaslearn_income_period");
       const sg = localStorage.getItem("atlaslearn_goal");
       const se = localStorage.getItem("atlaslearn_expenses");
       if (si) setIncome(Number(si));
+      if (sp) setIncomePeriod(sp);
       if (sg) setSavingsGoal(Number(sg));
       if (se) setExpenses(JSON.parse(se));
       setLoadingData(false);
@@ -99,12 +103,13 @@ export default function BudgetPage() {
     if (!mounted || loadingData) return;
     if (user) {
       const budgetRef = doc(firestore, "budgets", user.uid);
-      setDoc(budgetRef, { income, savingsGoal }, { merge: true });
+      setDoc(budgetRef, { income, incomePeriod, savingsGoal }, { merge: true });
     } else {
       localStorage.setItem("atlaslearn_income", income.toString());
+      localStorage.setItem("atlaslearn_income_period", incomePeriod);
       localStorage.setItem("atlaslearn_goal", savingsGoal.toString());
     }
-  }, [income, savingsGoal, user, mounted, loadingData]);
+  }, [income, incomePeriod, savingsGoal, user, mounted, loadingData]);
 
   const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
   const remainingBalance = income - totalExpenses;
@@ -178,11 +183,21 @@ export default function BudgetPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-card/60 backdrop-blur-sm border border-border p-6 rounded-2xl shadow-sm">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Wallet className="w-5 h-5" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <h2 className="text-muted-foreground font-medium text-sm">Income</h2>
             </div>
-            <h2 className="text-muted-foreground font-medium text-sm">Monthly Income</h2>
+            <select
+              value={incomePeriod}
+              onChange={(e) => setIncomePeriod(e.target.value)}
+              className="text-xs bg-muted/50 border border-border text-muted-foreground rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+            </select>
           </div>
           <input
             type="number"
@@ -267,7 +282,7 @@ export default function BudgetPage() {
                 className="w-full border border-border bg-background p-3 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm"
                 required
               />
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="number"
                   placeholder="Amount (₦)"
@@ -279,7 +294,7 @@ export default function BudgetPage() {
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="border border-border bg-background p-3 rounded-xl focus:ring-2 focus:ring-primary outline-none w-[130px] text-sm"
+                  className="border border-border bg-background p-3 rounded-xl focus:ring-2 focus:ring-primary outline-none w-full sm:w-[130px] text-sm"
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat}>{cat}</option>
@@ -335,11 +350,11 @@ export default function BudgetPage() {
                             <p className="text-sm text-muted-foreground">{expense.category}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold">₦{expense.amount.toLocaleString()}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-3 sm:mt-0 items-end">
+                          <span className="font-bold text-lg sm:text-base">₦{expense.amount.toLocaleString()}</span>
                           <button
                             onClick={() => deleteExpense(expense.id)}
-                            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100"
+                            className="p-2 -mr-2 sm:mr-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100"
                             title="Delete expense"
                           >
                             <Trash2 className="w-4 h-4" />

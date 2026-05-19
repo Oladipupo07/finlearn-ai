@@ -109,7 +109,7 @@ export default function GlobalChatbot() {
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl bg-card/90 backdrop-blur-xl border border-border shadow-2xl shadow-black/30 overflow-hidden"
-            style={{ height: minimized ? "auto" : "500px" }}
+            style={{ height: minimized ? "auto" : "500px", maxHeight: "calc(100vh - 6rem)" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-border shrink-0">
