@@ -26,7 +26,6 @@ export default function Home() {
               <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
               <Link href="#why" className="hover:text-foreground transition-colors">Why AtlasLearn</Link>
             </div>
-            <ThemeToggle />
             {user ? (
               <Link
                 href="/dashboard"
