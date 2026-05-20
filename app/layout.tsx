@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthProvider } from "@/contexts/AuthContext";
 import GlobalChatbot from "@/components/GlobalChatbot";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,6 +58,7 @@ export default function RootLayout({
               <ThemeToggle />
             </div>
             <GlobalChatbot />
+            <PWAInstallPrompt />
           </AuthProvider>
         </ThemeProvider>
       </body>
