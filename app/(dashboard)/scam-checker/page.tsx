@@ -116,14 +116,14 @@ export default function ScamDetectorPage() {
               placeholder="Paste the suspicious message here..."
               className="w-full h-64 bg-transparent resize-none outline-none p-6 text-lg placeholder:text-muted-foreground leading-relaxed"
             />
-            <div className="bg-muted border border-border p-4 rounded-2xl flex items-center justify-between">
-               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest pl-2">
+            <div className="bg-muted border border-border p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest pl-2 self-start sm:self-center">
                  {text.length} characters
                </span>
                <button 
                  onClick={analyzeText}
                  disabled={!text.trim() || isScanning}
-                 className="bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                 className="w-full sm:w-auto justify-center bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                >
                  {isScanning ? (
                    <>

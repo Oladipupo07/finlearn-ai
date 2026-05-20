@@ -97,7 +97,7 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-100px)] flex flex-col md:flex-row gap-6">
+    <div className="h-[calc(100dvh-130px)] md:h-[calc(100vh-100px)] flex flex-col md:flex-row gap-6">
       {/* Sidebar with suggested prompts */}
       <div className="md:w-64 flex flex-col gap-4">
         <div>
@@ -159,7 +159,7 @@ export default function ChatbotPage() {
                   message.role === "user" ? "items-end" : "items-start"
                 )}>
                   <div className={cn(
-                    "px-5 py-3 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed word-break",
+                    "px-5 py-3 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed break-words",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground rounded-tr-sm"
                       : "bg-muted/50 backdrop-blur-sm border border-border rounded-tl-sm text-foreground prose dark:prose-invert prose-sm max-w-none"
