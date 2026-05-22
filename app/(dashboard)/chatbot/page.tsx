@@ -97,15 +97,17 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="h-[calc(100dvh-130px)] md:h-[calc(100vh-100px)] flex flex-col md:flex-row gap-6">
-      {/* Sidebar with suggested prompts */}
-      <div className="md:w-64 flex flex-col gap-4">
+    // Full-height container that fits within the dashboard shell — accounts for mobile top bar (pt-16)
+    <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100dvh-80px)] md:h-[calc(100vh-100px)]">
+
+      {/* Desktop sidebar with suggested prompts */}
+      <div className="hidden md:flex md:w-64 flex-col gap-4 shrink-0">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">AI Tutor</h1>
           <p className="text-muted-foreground text-sm mt-1">Ask any finance question.</p>
         </div>
 
-        <div className="hidden md:block flex-1 bg-card border border-border p-4 rounded-2xl shadow-sm glass">
+        <div className="flex-1 bg-card border border-border p-4 rounded-2xl shadow-sm glass">
           <h2 className="text-sm font-semibold mb-4 text-muted-foreground">Suggested Topics</h2>
           <div className="space-y-2">
             {SUGGESTED_PROMPTS.map((prompt, i) => (
@@ -130,9 +132,25 @@ export default function ChatbotPage() {
       </div>
 
       {/* Main Chat Interface */}
-      <div className="flex-1 bg-card border border-border rounded-2xl shadow-sm glass flex flex-col relative overflow-hidden">
-        {/* Chat History */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+      <div className="flex-1 bg-card border border-border rounded-2xl shadow-sm glass flex flex-col overflow-hidden min-h-0">
+
+        {/* Mobile header row — title + clear button */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+          <div>
+            <h1 className="text-lg font-bold tracking-tight leading-tight">AI Tutor</h1>
+            <p className="text-muted-foreground text-xs">Ask any finance question.</p>
+          </div>
+          <button
+            onClick={() => setMessages([messages[0]])}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg px-3 py-1.5"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Clear
+          </button>
+        </div>
+
+        {/* Chat History — scrollable region */}
+        <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6 min-h-0">
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
@@ -141,25 +159,27 @@ export default function ChatbotPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className={cn(
-                  "flex gap-4 w-full md:max-w-[85%]",
+                  "flex gap-2 md:gap-3 w-full max-w-[92%] md:max-w-[85%]",
                   message.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
                 )}
               >
-                {/* Avatar */}
+                {/* Avatar — smaller on mobile */}
                 <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
-                  message.role === "user" ? "bg-primary text-primary-foreground" : "bg-gradient-to-br from-blue-500 to-indigo-600 text-white"
+                  "w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-gradient-to-br from-blue-500 to-indigo-600 text-white"
                 )}>
-                  {message.role === "user" ? <User size={20} /> : <Bot size={20} />}
+                  {message.role === "user" ? <User size={14} /> : <Bot size={14} />}
                 </div>
 
                 {/* Bubble */}
                 <div className={cn(
-                  "flex flex-col gap-1",
+                  "flex flex-col gap-1 min-w-0",
                   message.role === "user" ? "items-end" : "items-start"
                 )}>
                   <div className={cn(
-                    "px-5 py-3 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed break-words",
+                    "px-3 py-2 md:px-5 md:py-3 rounded-2xl shadow-sm text-sm leading-relaxed break-words",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground rounded-tr-sm"
                       : "bg-muted/50 backdrop-blur-sm border border-border rounded-tl-sm text-foreground prose dark:prose-invert prose-sm max-w-none"
@@ -173,15 +193,19 @@ export default function ChatbotPage() {
                     )}
                   </div>
 
-                  {/* Actions & Timestamp */}
-                  <div className="flex items-center space-x-2 opacity-60 text-xs mt-1">
-                    <span suppressHydrationWarning>{message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  {/* Timestamp + copy */}
+                  <div className="flex items-center space-x-2 opacity-60 text-xs mt-0.5">
+                    <span suppressHydrationWarning>
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                     {message.role === "assistant" && (
                       <button
                         onClick={() => handleCopy(message.id, message.content)}
                         className="hover:text-primary transition-colors flex items-center gap-1"
                       >
-                        {copiedId === message.id ? <CheckCircle2 size={12} className="text-primary" /> : <Copy size={12} />}
+                        {copiedId === message.id
+                          ? <CheckCircle2 size={12} className="text-primary" />
+                          : <Copy size={12} />}
                       </button>
                     )}
                   </div>
@@ -189,18 +213,18 @@ export default function ChatbotPage() {
               </motion.div>
             ))}
 
-            {/* Loading Indicator */}
+            {/* Typing indicator */}
             {isTyping && (
               <motion.div
                 key="typing-indicator"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex gap-4 w-full md:max-w-[85%] mr-auto"
+                className="flex gap-2 md:gap-3 w-full max-w-[85%] mr-auto"
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <Bot size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <Bot size={14} />
                 </div>
-                <div className="bg-muted/50 border border-border px-5 py-4 rounded-2xl rounded-tl-sm flex items-center space-x-2 shadow-sm">
+                <div className="bg-muted/50 border border-border px-4 py-3 rounded-2xl rounded-tl-sm flex items-center space-x-1.5 shadow-sm">
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -211,24 +235,24 @@ export default function ChatbotPage() {
           </AnimatePresence>
         </div>
 
-        {/* Dynamic Mobile Suggestion chips */}
-        <div className="md:hidden flex overflow-x-auto p-4 gap-2 border-t border-border/50 no-scrollbar">
+        {/* Mobile horizontal suggestion chips — above input */}
+        <div className="md:hidden flex overflow-x-auto px-3 py-2 gap-2 border-t border-border/50 shrink-0 no-scrollbar">
           {SUGGESTED_PROMPTS.map((prompt, i) => (
             <button
               key={i}
               onClick={() => handleSend(prompt)}
-              className="whitespace-nowrap bg-muted/50 border border-border px-4 py-2 text-xs rounded-full hover:bg-muted"
+              className="whitespace-nowrap bg-muted/60 border border-border px-3 py-1.5 text-xs rounded-full hover:bg-muted shrink-0"
             >
               {prompt}
             </button>
           ))}
         </div>
 
-        {/* Input Area */}
-        <div className="p-4 bg-background border-t border-border z-10">
+        {/* Input bar */}
+        <div className="px-3 py-3 md:p-4 bg-background border-t border-border shrink-0">
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
-            className="flex items-end gap-2 bg-card border border-border rounded-2xl p-2 focus-within:ring-2 focus-within:ring-primary/50 transition-all shadow-sm"
+            className="flex items-end gap-2 bg-card border border-border rounded-2xl p-1.5 md:p-2 focus-within:ring-2 focus-within:ring-primary/50 transition-all shadow-sm"
           >
             <textarea
               value={input}
@@ -239,19 +263,19 @@ export default function ChatbotPage() {
                   handleSend(input);
                 }
               }}
-              placeholder="Ask anything about finance..."
-              className="w-full max-h-32 min-h-[44px] bg-transparent resize-none outline-none py-2 px-3 text-sm flex-1 leading-relaxed"
+              placeholder="Ask about finance..."
+              className="w-full max-h-28 min-h-[40px] bg-transparent resize-none outline-none py-2 px-2 md:px-3 text-sm flex-1 leading-relaxed"
               rows={1}
             />
             <button
               type="submit"
               disabled={!input.trim() || isTyping}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Send size={18} className="translate-x-[1px] translate-y-[-1px]" />
+              <Send size={16} className="translate-x-[1px] translate-y-[-1px]" />
             </button>
           </form>
-          <div className="text-center mt-2">
+          <div className="text-center mt-1.5">
             <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Powered by Gemini</span>
           </div>
         </div>

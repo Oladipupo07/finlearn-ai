@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Target, Flame, Activity } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStreak } from "@/contexts/StreakContext";
 import { doc, collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
 import Link from "next/link";
@@ -28,6 +29,7 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { streak } = useStreak();
   const [income, setIncome] = useState(0);
   const [incomePeriod, setIncomePeriod] = useState("Monthly");
   const [savingsGoal, setSavingsGoal] = useState(100000);
@@ -112,9 +114,18 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <div className="inline-flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-xl shadow-sm">
-            <Flame className="w-5 h-5 text-orange-500 animate-pulse" />
-            <span className="font-bold text-sm">7 Day Streak!</span>
+          <div className="inline-flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all cursor-help group relative">
+            <Flame className="w-5 h-5 text-orange-500 animate-pulse fill-orange-500" />
+            <span className="font-bold text-sm">{streak?.currentStreak ?? 0} Day Streak!</span>
+            {/* Tooltip */}
+            <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-xs font-normal">
+              <p className="font-bold mb-1 text-foreground">🔥 Daily Streak</p>
+              <p className="text-muted-foreground mb-2">Keep learning daily to maintain your streak!</p>
+              <div className="border-t border-border/50 pt-2 flex justify-between">
+                <span>Personal Best:</span>
+                <span className="font-bold text-primary">{streak?.longestStreak ?? 0} days</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

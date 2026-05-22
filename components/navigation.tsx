@@ -16,10 +16,12 @@ import {
   LogOut,
   LogIn,
   UserPlus,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -33,6 +35,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { streak } = useStreak();
 
   const handleLogout = async () => {
     await logout();
@@ -75,6 +78,24 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Dynamic daily streak card */}
+        {user && (
+          <div className="pt-6 mt-6 border-t border-border/50 px-2">
+            <div className="bg-gradient-to-br from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl p-4 flex items-center gap-3 relative group overflow-hidden hover:border-orange-500/30 transition-all shadow-sm">
+              <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30 shrink-0 group-hover:scale-105 transition-transform">
+                <Flame className="w-5 h-5 fill-current" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Active Streak</p>
+                <p className="text-sm font-bold text-foreground mt-0.5">
+                  {streak?.currentStreak ?? 0} {streak?.currentStreak === 1 ? "Day" : "Days"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       <div className="p-4 border-t border-border mt-auto flex flex-col gap-2">
@@ -130,6 +151,7 @@ export function MobileNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { streak } = useStreak();
 
   React.useEffect(() => {
     setIsOpen(false);
@@ -150,7 +172,13 @@ export function MobileNav() {
           </div>
           <span className="text-lg font-bold tracking-tight">AtlasLearn <span className="text-primary">AI</span></span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          {user && (
+            <div className="inline-flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/25 px-3 py-1 rounded-full text-xs font-bold text-orange-500">
+              <Flame className="w-3.5 h-3.5 fill-current" />
+              <span>{streak?.currentStreak ?? 0}</span>
+            </div>
+          )}
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 -mr-2 text-foreground">
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -184,6 +212,23 @@ export function MobileNav() {
                   </Link>
                 );
               })}
+
+              {/* Dynamic streak card for mobile navigation */}
+              {user && (
+                <div className="pt-4 mt-4 border-t border-border/50 px-1">
+                  <div className="bg-gradient-to-br from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/30 shrink-0">
+                      <Flame className="w-5 h-5 fill-current" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Active Streak</p>
+                      <p className="text-sm font-bold text-foreground mt-0.5">
+                        {streak?.currentStreak ?? 0} {streak?.currentStreak === 1 ? "Day" : "Days"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </nav>
 
             <div className="p-4 border-t border-border flex flex-col gap-2">
