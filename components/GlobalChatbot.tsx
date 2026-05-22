@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus, Send, Loader2, Bot, User } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 interface Message {
   id: string;
@@ -18,8 +19,12 @@ const SUGGESTED_PROMPTS = [
 ];
 
 export default function GlobalChatbot() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
+
+  if (pathname === "/chatbot") return null;
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",

@@ -97,8 +97,8 @@ export default function ChatbotPage() {
   };
 
   return (
-    // Full-height container that fits within the dashboard shell — accounts for mobile top bar (pt-16)
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100dvh-80px)] md:h-[calc(100vh-100px)]">
+    // Height optimized specifically for mobile viewports to prevent layout scrollbars
+    <div className="flex flex-col md:flex-row gap-4 md:gap-6 -mx-4 -mt-4 -mb-4 h-[calc(100dvh-64px)] md:m-0 md:h-[calc(100vh-100px)]">
 
       {/* Desktop sidebar with suggested prompts */}
       <div className="hidden md:flex md:w-64 flex-col gap-4 shrink-0">
@@ -132,7 +132,7 @@ export default function ChatbotPage() {
       </div>
 
       {/* Main Chat Interface */}
-      <div className="flex-1 bg-card border border-border rounded-2xl shadow-sm glass flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 bg-card border-0 md:border border-border rounded-none md:rounded-2xl shadow-none md:shadow-sm glass flex flex-col overflow-hidden min-h-0">
 
         {/* Mobile header row — title + clear button */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
@@ -187,7 +187,12 @@ export default function ChatbotPage() {
                     {message.role === "user" ? (
                       message.content
                     ) : (
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ children }) => <p className="m-0 last:mb-0 mb-2 leading-relaxed">{children}</p>
+                        }}
+                      >
                         {message.content}
                       </ReactMarkdown>
                     )}

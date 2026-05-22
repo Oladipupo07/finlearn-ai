@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { usePathname } from "next/navigation";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -18,3 +19,18 @@ export function ThemeToggle() {
     </button>
   );
 }
+
+export function FloatingThemeToggle() {
+  const pathname = usePathname();
+
+  if (pathname === "/chatbot") {
+    return null;
+  }
+
+  return (
+    <div className="fixed bottom-6 left-6 z-40 bg-card/60 backdrop-blur-lg border border-border rounded-full shadow-2xl p-1 flex items-center justify-center">
+      <ThemeToggle />
+    </div>
+  );
+}
+
