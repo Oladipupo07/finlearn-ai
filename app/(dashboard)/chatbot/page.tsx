@@ -99,7 +99,7 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100dvh-100px)] md:h-[calc(100vh-100px)]">
+    <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0 w-full">
 
       {/* Desktop sidebar with suggested prompts */}
       <div className="hidden md:flex md:w-64 flex-col gap-4 shrink-0">
