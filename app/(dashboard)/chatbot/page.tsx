@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/purity */
+
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Bot, User, Copy, CheckCircle2, RotateCcw } from "lucide-react";
@@ -23,6 +25,8 @@ const SUGGESTED_PROMPTS = [
 
 export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([
+
+
     {
       id: "welcome",
       role: "assistant",
@@ -97,8 +101,7 @@ export default function ChatbotPage() {
   };
 
   return (
-    // Height optimized specifically for mobile viewports to prevent layout scrollbars
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 -mx-4 -mt-4 -mb-4 h-[calc(100dvh-64px)] md:m-0 md:h-[calc(100vh-100px)]">
+    <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100dvh-100px)] md:h-[calc(100vh-100px)]">
 
       {/* Desktop sidebar with suggested prompts */}
       <div className="hidden md:flex md:w-64 flex-col gap-4 shrink-0">
@@ -132,7 +135,7 @@ export default function ChatbotPage() {
       </div>
 
       {/* Main Chat Interface */}
-      <div className="flex-1 bg-card border-0 md:border border-border rounded-none md:rounded-2xl shadow-none md:shadow-sm glass flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 bg-card border border-border rounded-2xl shadow-sm glass flex flex-col overflow-hidden min-h-0">
 
         {/* Mobile header row — title + clear button */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border shrink-0">

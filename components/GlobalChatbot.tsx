@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/purity */
+
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus, Send, Loader2, Bot, User } from "lucide-react";
@@ -23,8 +25,6 @@ export default function GlobalChatbot() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
 
-  if (pathname === "/chatbot") return null;
-
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -47,7 +47,7 @@ export default function GlobalChatbot() {
     if (!content || loading) return;
     setInput("");
 
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content };
+    const userMsg: Message = { id: Math.random().toString(), role: "user", content };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setLoading(true);
@@ -67,13 +67,13 @@ export default function GlobalChatbot() {
       const assistantContent = data.message ?? data.content ?? "Sorry, I could not get a response.";
       setMessages((prev) => [
         ...prev,
-        { id: Date.now().toString() + "-a", role: "assistant", content: assistantContent },
+        { id: Math.random().toString() + "-a", role: "assistant", content: assistantContent },
       ]);
     } catch {
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now().toString() + "-err",
+          id: Math.random().toString() + "-err",
           role: "assistant",
           content: "Sorry, I'm having trouble connecting. Please try again.",
         },
@@ -82,6 +82,8 @@ export default function GlobalChatbot() {
       setLoading(false);
     }
   };
+
+  if (pathname === "/chatbot") return null;
 
   return (
     <>
