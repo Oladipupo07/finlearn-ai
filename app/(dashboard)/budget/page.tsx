@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGamification } from "@/contexts/GamificationContext";
 import {
   collection,
   doc,
@@ -70,6 +71,7 @@ function formatDateLabel(dateKey: string): string {
 
 export default function BudgetPage() {
   const { user } = useAuth();
+  const { incrementBudgetCount, checkSavingsGoalReached, triggerAction } = useGamification();
   const [mounted, setMounted] = useState(false);
 
   // The date being viewed (defaults to today)
@@ -112,17 +114,39 @@ export default function BudgetPage() {
       const expensesRef = collection(firestore, "budgets", user.uid, "daily", viewingDate, "expenses");
       const q = query(expensesRef, orderBy("createdAt", "desc"));
 
-      const unsubBudget = onSnapshot(budgetRef, (snap) => {
+      const unsubBudget = onSnapshot(budgetRef, async (snap) => {
         if (snap.exists()) {
           const data = snap.data();
           setIncome(data.income ?? 500000);
           setIncomePeriod(data.incomePeriod ?? "Monthly");
           setSavingsGoal(data.savingsGoal ?? 100000);
         } else {
-          // New day — reset to defaults
-          setIncome(500000);
-          setIncomePeriod("Monthly");
-          setSavingsGoal(100000);
+          // New day — try to get the remaining balance from the previous day
+          try {
+            const dailyRef = collection(firestore, "budgets", user.uid, "daily");
+            const snapDocs = await getDocs(query(dailyRef, orderBy("date", "desc")));
+            const prevDoc = snapDocs.docs.find((d) => d.id < viewingDate);
+            if (prevDoc) {
+              const prevData = prevDoc.data();
+              const expRef = collection(firestore, "budgets", user.uid, "daily", prevDoc.id, "expenses");
+              const expSnap = await getDocs(expRef);
+              const totalExp = expSnap.docs.reduce((acc, e) => acc + (e.data().amount ?? 0), 0);
+              const remaining = (prevData.income ?? 0) - totalExp;
+              
+              setIncome(remaining >= 0 ? remaining : 0);
+              setIncomePeriod(prevData.incomePeriod ?? "Monthly");
+              setSavingsGoal(prevData.savingsGoal ?? 100000);
+            } else {
+              setIncome(500000);
+              setIncomePeriod("Monthly");
+              setSavingsGoal(100000);
+            }
+          } catch (err) {
+            console.error("Error loading previous day balance:", err);
+            setIncome(500000);
+            setIncomePeriod("Monthly");
+            setSavingsGoal(100000);
+          }
         }
         setLoadingData(false);
       });
@@ -142,10 +166,43 @@ export default function BudgetPage() {
       const sp = localStorage.getItem(lsKey("period"));
       const sg = localStorage.getItem(lsKey("goal"));
       const se = localStorage.getItem(lsKey("expenses"));
-      setIncome(si ? Number(si) : 500000);
-      setIncomePeriod(sp ?? "Monthly");
-      setSavingsGoal(sg ? Number(sg) : 100000);
-      setExpenses(se ? JSON.parse(se) : []);
+      if (si) {
+        setIncome(Number(si));
+        setIncomePeriod(sp ?? "Monthly");
+        setSavingsGoal(sg ? Number(sg) : 100000);
+        setExpenses(se ? JSON.parse(se) : []);
+      } else {
+        // No budget for today yet, find latest previous day in localStorage
+        let latestPrevDate = "";
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith("atlaslearn_budget_") && key.endsWith("_income")) {
+            const dateKey = key.replace("atlaslearn_budget_", "").replace("_income", "");
+            if (dateKey < viewingDate) {
+              if (!latestPrevDate || dateKey > latestPrevDate) {
+                latestPrevDate = dateKey;
+              }
+            }
+          }
+        }
+        if (latestPrevDate) {
+          const prevInc = Number(localStorage.getItem(`atlaslearn_budget_${latestPrevDate}_income`) ?? 0);
+          const prevGoal = Number(localStorage.getItem(`atlaslearn_budget_${latestPrevDate}_goal`) ?? 100000);
+          const prevPeriod = localStorage.getItem(`atlaslearn_budget_${latestPrevDate}_period`) ?? "Monthly";
+          const prevExpensesRaw = localStorage.getItem(`atlaslearn_budget_${latestPrevDate}_expenses`);
+          const prevExps = prevExpensesRaw ? JSON.parse(prevExpensesRaw) : [];
+          const totalExp = prevExps.reduce((acc: number, e: any) => acc + (e.amount ?? 0), 0);
+          const remaining = prevInc - totalExp;
+          setIncome(remaining >= 0 ? remaining : 0);
+          setIncomePeriod(prevPeriod);
+          setSavingsGoal(prevGoal);
+        } else {
+          setIncome(500000);
+          setIncomePeriod("Monthly");
+          setSavingsGoal(100000);
+        }
+        setExpenses([]);
+      }
       setLoadingData(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,10 +214,14 @@ export default function BudgetPage() {
     if (user) {
       const budgetRef = doc(firestore, "budgets", user.uid, "daily", viewingDate);
       setDoc(budgetRef, { income, incomePeriod, savingsGoal, date: viewingDate }, { merge: true });
+      incrementBudgetCount();
+      triggerAction("budget");
     } else {
       localStorage.setItem(lsKey("income"), income.toString());
       localStorage.setItem(lsKey("period"), incomePeriod);
       localStorage.setItem(lsKey("goal"), savingsGoal.toString());
+      incrementBudgetCount();
+      triggerAction("budget");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [income, incomePeriod, savingsGoal, user, mounted, loadingData, isToday]);
@@ -216,6 +277,14 @@ export default function BudgetPage() {
   const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
   const remainingBalance = income - totalExpenses;
   const savingsProgress = income > 0 ? Math.min((remainingBalance / savingsGoal) * 100, 100) : 0;
+
+  // Check if savings goal achieved for Savings Hero badge
+  useEffect(() => {
+    if (mounted && isToday && savingsProgress >= 100 && savingsGoal > 0) {
+      checkSavingsGoalReached();
+      triggerAction("savings");
+    }
+  }, [savingsProgress, savingsGoal, isToday, mounted]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();

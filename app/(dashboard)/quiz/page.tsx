@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Clock, Target, RotateCcw, AlertTriangle, ShieldCheck, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import { useGamification } from "@/contexts/GamificationContext";
 
 type Question = {
   id: number;
@@ -16,6 +17,7 @@ type Question = {
 };
 
 export default function QuizPage() {
+  const { addXP, unlockBadge, triggerAction } = useGamification();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -91,6 +93,11 @@ export default function QuizPage() {
       setIsQuizOver(true);
       setTimerActive(false);
       triggerConfetti();
+      addXP(10, "Quiz Completed");
+      triggerAction("quiz");
+      if (score / questions.length >= 0.8) {
+        unlockBadge("quiz_master");
+      }
     }
   };
 

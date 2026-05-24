@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus, Send, Loader2, Bot, User } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useGamification } from "@/contexts/GamificationContext";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
@@ -89,6 +90,7 @@ const markdownComponents: Components = {
 
 export default function GlobalChatbot() {
   const pathname = usePathname();
+  const { incrementAICount, triggerAction } = useGamification();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
 
@@ -137,6 +139,8 @@ export default function GlobalChatbot() {
         ...prev,
         { id: Math.random().toString() + "-a", role: "assistant", content: assistantContent },
       ]);
+      incrementAICount();
+      triggerAction("ai");
     } catch {
       setMessages((prev) => [
         ...prev,

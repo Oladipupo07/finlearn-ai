@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert, ShieldCheck, AlertTriangle, ScanSearch, FileText, CheckCircle2, ChevronRight, Copy, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGamification } from "@/contexts/GamificationContext";
 
 type ScamAnalysis = {
   riskLevel: "Low" | "Medium" | "High";
@@ -22,6 +23,7 @@ const TEMPLATES = [
 const RED_FLAGS = ["urgent", "suspended", "immediately", "verify", "gift card", "boss", "claim", "prize", "selected", "click here", "password", "ssn", "wire", "crypto"];
 
 export default function ScamDetectorPage() {
+  const { incrementScamCount, triggerAction } = useGamification();
   const [text, setText] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [analysis, setAnalysis] = useState<ScamAnalysis | null>(null);
@@ -64,6 +66,8 @@ export default function ScamDetectorPage() {
 
       setAnalysis({ riskLevel: risk, confidence, suspiciousKeywords: foundKeywords, explanation: exp, tips });
       setIsScanning(false);
+      incrementScamCount();
+      triggerAction("scam");
     }, 2000);
   };
 

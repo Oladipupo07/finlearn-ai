@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Bot, User, Copy, CheckCircle2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGamification } from "@/contexts/GamificationContext";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -24,6 +25,7 @@ const SUGGESTED_PROMPTS = [
 ];
 
 export default function ChatbotPage() {
+  const { incrementAICount, triggerAction } = useGamification();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -79,6 +81,8 @@ export default function ChatbotPage() {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      incrementAICount();
+      triggerAction("ai");
     } catch (error) {
       const errorMessage: Message = {
         id: Math.random().toString(),

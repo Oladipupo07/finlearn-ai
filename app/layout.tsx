@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { FloatingThemeToggle } from "@/components/theme-toggle";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { StreakProvider } from "@/contexts/StreakContext";
+import { GamificationProvider } from "@/contexts/GamificationContext";
 import GlobalChatbot from "@/components/GlobalChatbot";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
@@ -55,10 +56,12 @@ export default function RootLayout({
         >
           <AuthProvider>
             <StreakProvider>
-              {children}
-              <FloatingThemeToggle />
-              <GlobalChatbot />
-              <PWAInstallPrompt />
+              <GamificationProvider>
+                {children}
+                <FloatingThemeToggle />
+                <GlobalChatbot />
+                <PWAInstallPrompt />
+              </GamificationProvider>
             </StreakProvider>
           </AuthProvider>
         </ThemeProvider>
