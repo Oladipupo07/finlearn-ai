@@ -16,6 +16,7 @@ import {
   LogIn,
   UserPlus,
   Flame,
+  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,6 +28,7 @@ const navItems = [
   { name: "Budget Planner", href: "/budget", icon: Wallet },
   { name: "Finance Quiz", href: "/quiz", icon: BrainCircuit },
   { name: "Scam Checker", href: "/scam-checker", icon: ShieldAlert },
+  { name: "My Profile", href: "/profile", icon: UserRound },
 ];
 
 export function Sidebar() {
@@ -99,7 +101,10 @@ export function Sidebar() {
       <div className="p-4 border-t border-border mt-auto flex flex-col gap-2">
         {/* User Avatar & Name */}
         {user && (
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-muted/50 mb-1">
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-muted/50 mb-1 hover:bg-muted transition-colors group"
+          >
             {user.photoURL ? (
               <img src={user.photoURL} alt="avatar" className="w-7 h-7 rounded-full object-cover" />
             ) : (
@@ -107,11 +112,12 @@ export function Sidebar() {
                 {(user.displayName || user.email || "U")[0].toUpperCase()}
               </div>
             )}
-            <div className="overflow-hidden">
+            <div className="overflow-hidden flex-1">
               <p className="text-xs font-semibold text-foreground truncate">{user.displayName || "User"}</p>
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
-          </div>
+            <UserRound className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+          </Link>
         )}
 
         <Link
@@ -232,7 +238,10 @@ export function MobileNav() {
             <div className="p-4 border-t border-border flex flex-col gap-2">
               {user ? (
                 <>
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50">
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                  >
                     {user.photoURL ? (
                       <img src={user.photoURL} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
                     ) : (
@@ -240,11 +249,12 @@ export function MobileNav() {
                         {(user.displayName || user.email || "U")[0].toUpperCase()}
                       </div>
                     )}
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm font-semibold text-foreground">{user.displayName || "User"}</p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
-                  </div>
+                    <UserRound className="w-4 h-4 text-muted-foreground shrink-0" />
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium text-red-400 hover:bg-red-400/10 transition-all w-full"
