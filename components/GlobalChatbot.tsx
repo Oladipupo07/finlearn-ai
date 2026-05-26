@@ -7,6 +7,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Minus, Send, Loader2, Bot, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useGamification } from "@/contexts/GamificationContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useStreak } from "@/contexts/StreakContext";
+import { doc, onSnapshot, collection } from "firebase/firestore";
+import { firestore } from "@/lib/firebase";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
@@ -18,15 +22,14 @@ interface Message {
 }
 
 const SUGGESTED_PROMPTS = [
-  "How do I start a budget?",
-  "What is compound interest?",
-  "How can I avoid financial scams?",
-  "Best savings tips for students?",
+  "What is my recommended next step?",
+  "How do I improve my score?",
+  "Give me budgeting advice.",
+  "How do I detect financial scams?",
 ];
 
 /** Markdown component map — tuned for the compact chat bubble */
 const markdownComponents: Components = {
-  // Headings
   h1: ({ children }) => (
     <h1 className="text-sm font-bold text-foreground mt-3 mb-1.5 first:mt-0 border-b border-border/50 pb-1">
       {children}
@@ -42,13 +45,9 @@ const markdownComponents: Components = {
       {children}
     </h3>
   ),
-
-  // Paragraphs
   p: ({ children }) => (
     <p className="text-sm leading-relaxed mb-2 last:mb-0">{children}</p>
   ),
-
-  // Lists
   ul: ({ children }) => (
     <ul className="space-y-1 mb-2 pl-1">{children}</ul>
   ),
@@ -61,36 +60,31 @@ const markdownComponents: Components = {
       <span>{children}</span>
     </li>
   ),
-
-  // Bold & italic
   strong: ({ children }) => (
     <strong className="font-semibold text-foreground">{children}</strong>
   ),
   em: ({ children }) => (
     <em className="italic text-muted-foreground">{children}</em>
   ),
-
-  // Blockquote — used for tips / warnings
   blockquote: ({ children }) => (
     <blockquote className="border-l-2 border-primary pl-3 py-1 my-2 bg-primary/5 rounded-r-lg text-sm text-muted-foreground italic">
       {children}
     </blockquote>
   ),
-
-  // Inline code
   code: ({ children }) => (
     <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono text-foreground">
       {children}
     </code>
   ),
-
-  // Horizontal rule
   hr: () => <hr className="border-border/50 my-3" />,
 };
 
 export default function GlobalChatbot() {
   const pathname = usePathname();
-  const { incrementAICount, triggerAction } = useGamification();
+  const { user } = useAuth();
+  const { streak } = useStreak();
+  const { progress, incrementAICount, triggerAction } = useGamification();
+
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
 
@@ -99,12 +93,115 @@ export default function GlobalChatbot() {
       id: "welcome",
       role: "assistant",
       content:
-        "Hi! 👋 I'm your **AtlasLearn AI Finance Tutor**.\n\nAsk me anything about **budgeting**, **investing**, or **personal finance** and I'll give you a clear, structured answer!",
+        "Hi! 👋 I'm **Atlas Coach**, your personal AI finance assistant.\n\nAsk me anything about budgeting, saving, or investing, and I'll give you customized advice based on your current stats!",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // States to hold user stats
+  const [income, setIncome] = useState(0);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [savingsGoal, setSavingsGoal] = useState(100000);
+  const [roadmapProgress, setRoadmapProgress] = useState(0);
+  const [latestReportScore, setLatestReportScore] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch real-time budget, roadmap and report card info for coaching context
+  useEffect(() => {
+    if (!mounted) return;
+
+    if (user) {
+      // 1. Budget Stats
+      const budgetRef = doc(firestore, "budgets", user.uid);
+      const expensesRef = collection(firestore, "budgets", user.uid, "expenses");
+      const unsubBudget = onSnapshot(budgetRef, (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setIncome(data.income ?? 0);
+          setSavingsGoal(data.savingsGoal ?? 100000);
+        }
+      });
+      const unsubExpenses = onSnapshot(expensesRef, (snap) => {
+        const total = snap.docs.reduce((sum, d) => sum + (d.data().amount || 0), 0);
+        setTotalExpenses(total);
+      });
+
+      // 2. Roadmap progress
+      const roadmapRef = doc(firestore, "roadmaps", user.uid);
+      const unsubRoadmap = onSnapshot(roadmapRef, (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          let tot = 0;
+          let done = 0;
+          if (data.weeks) {
+            data.weeks.forEach((w: any) => {
+              w.tasks.forEach((t: any) => {
+                tot += 1;
+                if (t.completed) done += 1;
+              });
+            });
+          }
+          setRoadmapProgress(tot > 0 ? Math.round((done / tot) * 100) : 0);
+        }
+      });
+
+      // 3. Reports
+      const reportRef = doc(firestore, "reports", user.uid);
+      const unsubReport = onSnapshot(reportRef, (snap) => {
+        if (snap.exists()) {
+          const reports = snap.data().history || [];
+          if (reports.length > 0) {
+            setLatestReportScore(reports[reports.length - 1].score);
+          }
+        }
+      });
+
+      return () => { unsubBudget(); unsubExpenses(); unsubRoadmap(); unsubReport(); };
+    } else {
+      // LocalStorage fallbacks
+      const si = localStorage.getItem("atlaslearn_income");
+      const sg = localStorage.getItem("atlaslearn_goal");
+      const se = localStorage.getItem("atlaslearn_expenses");
+      const rm = localStorage.getItem("atlaslearn_roadmap");
+      const rh = localStorage.getItem("atlaslearn_report_history");
+
+      if (si) setIncome(Number(si));
+      if (sg) setSavingsGoal(Number(sg));
+      if (se) {
+        try {
+          const parsedExpenses = JSON.parse(se) as { amount: number }[];
+          setTotalExpenses(parsedExpenses.reduce((sum, e) => sum + e.amount, 0));
+        } catch {}
+      }
+      if (rm) {
+        try {
+          const data = JSON.parse(rm);
+          let tot = 0, done = 0;
+          data.weeks?.forEach((w: any) => {
+            w.tasks?.forEach((t: any) => {
+              tot += 1;
+              if (t.completed) done += 1;
+            });
+          });
+          setRoadmapProgress(tot > 0 ? Math.round((done / tot) * 100) : 0);
+        } catch {}
+      }
+      if (rh) {
+        try {
+          const data = JSON.parse(rh);
+          if (data.length > 0) {
+            setLatestReportScore(data[data.length - 1].score);
+          }
+        } catch {}
+      }
+    }
+  }, [user, mounted]);
 
   useEffect(() => {
     if (open && !minimized) {
@@ -123,11 +220,21 @@ export default function GlobalChatbot() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch("/api/coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+          userData: {
+            income,
+            totalExpenses,
+            savingsGoal,
+            streak: streak?.currentStreak ?? 0,
+            level: progress.level,
+            xp: progress.xp,
+            roadmapProgress,
+            latestReportScore
+          }
         }),
       });
 
@@ -147,7 +254,7 @@ export default function GlobalChatbot() {
         {
           id: Math.random().toString() + "-err",
           role: "assistant",
-          content: "Sorry, I'm having trouble connecting. Please try again.",
+          content: "Sorry, I'm having trouble connecting to Atlas Coach. Please try again.",
         },
       ]);
     } finally {
@@ -171,7 +278,7 @@ export default function GlobalChatbot() {
             whileTap={{ scale: 0.95 }}
             onClick={() => { setOpen(true); setMinimized(false); }}
             className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary shadow-2xl shadow-primary/40 flex items-center justify-center text-white hover:bg-primary/90 transition-colors"
-            aria-label="Open AI Tutor"
+            aria-label="Open Atlas Coach"
           >
             <MessageCircle className="w-6 h-6" />
           </motion.button>
@@ -197,10 +304,10 @@ export default function GlobalChatbot() {
                   <Bot className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-foreground">Finance Tutor</span>
+                  <span className="text-sm font-semibold text-foreground">Atlas Coach</span>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    <span className="text-xs text-muted-foreground">Online</span>
+                    <span className="text-xs text-muted-foreground">Personal AI Coach</span>
                   </div>
                 </div>
               </div>
@@ -302,7 +409,7 @@ export default function GlobalChatbot() {
                     <input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder="Ask a finance question..."
+                      placeholder="Ask Atlas Coach a question..."
                       disabled={loading}
                       className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground disabled:opacity-50"
                     />
@@ -314,8 +421,8 @@ export default function GlobalChatbot() {
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </button>
                   </form>
-                  <p className="text-center text-[10px] text-muted-foreground mt-1.5 uppercase tracking-widest">
-                    Powered by Gemini
+                  <p className="text-center text-[10px] text-muted-foreground mt-1.5 uppercase tracking-widest font-semibold">
+                    Personalized Financial Advice
                   </p>
                 </div>
               </>

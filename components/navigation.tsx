@@ -17,6 +17,9 @@ import {
   UserPlus,
   Flame,
   UserRound,
+  Map,
+  ClipboardList,
+  Bot
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +29,9 @@ import { useStreak } from "@/contexts/StreakContext";
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Budget Planner", href: "/budget", icon: Wallet },
+  { name: "AI Roadmap", href: "/roadmap", icon: Map },
+  { name: "Report Card", href: "/report", icon: ClipboardList },
+  { name: "Atlas Coach", href: "/chatbot", icon: Bot },
   { name: "Finance Quiz", href: "/quiz", icon: BrainCircuit },
   { name: "Scam Checker", href: "/scam-checker", icon: ShieldAlert },
   { name: "My Profile", href: "/profile", icon: UserRound },
