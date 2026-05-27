@@ -30,6 +30,54 @@ const QUICK_ACTIONS = [
   { text: "Create Study Plan", prompt: "Create a 7-day study plan for me.", icon: BookOpen, color: "text-indigo-500 bg-indigo-500/10" }
 ];
 
+const markdownComponents: any = {
+  h1: ({ children, ...props }: any) => (
+    <h1 className="text-base font-bold text-foreground mt-4 mb-2 first:mt-0 border-b border-border/50 pb-1" {...props}>
+      {children}
+    </h1>
+  ),
+  h2: ({ children, ...props }: any) => (
+    <h2 className="text-sm font-bold text-foreground mt-3 mb-1.5 first:mt-0" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...props }: any) => (
+    <h3 className="text-xs font-semibold text-foreground/80 uppercase tracking-wide mt-2.5 mb-1 first:mt-0" {...props}>
+      {children}
+    </h3>
+  ),
+  p: ({ children, ...props }: any) => (
+    <p className="text-sm leading-relaxed mb-2 last:mb-0" {...props}>{children}</p>
+  ),
+  ul: ({ children, ...props }: any) => (
+    <ul className="space-y-1 mb-2 pl-4 list-disc" {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }: any) => (
+    <ol className="space-y-1 mb-2 pl-4 list-decimal" {...props}>{children}</ol>
+  ),
+  li: ({ children, ...props }: any) => (
+    <li className="text-sm leading-relaxed" {...props}>{children}</li>
+  ),
+  strong: ({ children, ...props }: any) => (
+    <strong className="font-semibold text-foreground" {...props}>{children}</strong>
+  ),
+  em: ({ children, ...props }: any) => (
+    <em className="italic text-muted-foreground" {...props}>{children}</em>
+  ),
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote className="border-l-2 border-primary pl-3 py-1 my-2 bg-primary/5 rounded-r-lg text-sm text-muted-foreground italic" {...props}>
+      {children}
+    </blockquote>
+  ),
+  code: ({ children, ...props }: any) => (
+    <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-foreground" {...props}>
+      {children}
+    </code>
+  ),
+  hr: (props: any) => <hr className="border-border/50 my-3" {...props} />,
+};
+
+
 export default function ChatbotPage() {
   const { user } = useAuth();
   const { streak } = useStreak();
@@ -225,7 +273,7 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-[calc(100vh-8rem)] w-full pb-6">
+    <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 h-[calc(100dvh-6rem)] md:h-[calc(100dvh-4rem)] w-full min-h-0 pb-0 md:pb-6">
 
       {/* Desktop sidebar with suggested prompts */}
       <div className="hidden md:flex md:w-80 flex-col gap-4 shrink-0">
@@ -282,7 +330,7 @@ export default function ChatbotPage() {
         </div>
 
         {/* Chat History — scrollable region */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 min-h-[300px]">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 min-h-0">
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
@@ -314,16 +362,14 @@ export default function ChatbotPage() {
                     "px-4 py-2.5 md:px-5 md:py-3.5 rounded-2xl shadow-sm text-sm leading-relaxed break-words",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground rounded-tr-sm"
-                      : "bg-muted/50 backdrop-blur-sm border border-border rounded-tl-sm text-foreground prose dark:prose-invert prose-sm max-w-none"
+                      : "bg-muted/50 backdrop-blur-sm border border-border rounded-tl-sm text-foreground max-w-none"
                   )}>
                     {message.role === "user" ? (
                       message.content
                     ) : (
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
-                        components={{
-                          p: ({ children }) => <p className="m-0 last:mb-0 mb-2 leading-relaxed">{children}</p>
-                        }}
+                        components={markdownComponents}
                       >
                         {message.content}
                       </ReactMarkdown>
@@ -387,7 +433,7 @@ export default function ChatbotPage() {
         </div>
 
         {/* Input bar */}
-        <div className="px-3 py-3 md:p-4 bg-background border-t border-border shrink-0">
+        <div className="px-2.5 py-2.5 md:p-4 bg-background border-t border-border shrink-0">
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
             className="flex items-end gap-2 bg-card border border-border rounded-2xl p-1.5 md:p-2 focus-within:ring-2 focus-within:ring-primary/50 transition-all shadow-sm"
@@ -408,12 +454,12 @@ export default function ChatbotPage() {
             <button
               type="submit"
               disabled={!input.trim() || isTyping}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send size={16} className="translate-x-[1px] translate-y-[-1px]" />
             </button>
           </form>
-          <div className="text-center mt-1.5">
+          <div className="text-center mt-1.5 hidden md:block">
             <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Context-Aware AI Personal Coach</span>
           </div>
         </div>
